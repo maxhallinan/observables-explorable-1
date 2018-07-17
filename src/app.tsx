@@ -217,7 +217,9 @@ type State = {
   graph: Graph;
 }
 
-const toState = (graph: Graph): State => ({
+const toState = ([ 
+  graph,
+]: [ Graph ]): State => ({
   graph,
 });
 
@@ -354,11 +356,23 @@ const toView = (state: State) => {
         {state.graph.edges.map((edge) => <Edge edge={edge} />)}
         {state.graph.nodes.map((node) => <Node node={node} />)}
       </svg>
-      <button>Connect</button>
-      <button>Disconnect</button>
+      <button 
+        className="connect-btn"
+      >
+          Connect
+      </button>
+      <button 
+        className="disconnect-btn"
+      >
+          Disconnect
+      </button>
     </div>
   );
 };
+
+const add = (x1: number) => (x2: number): number => x1 + x2;
+
+const addOne = add(1);
 
 export function App(sources : Sources) : Sinks {
   const graph$ = Rx.Observable.of({
@@ -366,7 +380,29 @@ export function App(sources : Sources) : Sinks {
     nodes,
   });
 
-  const state$ = graph$.map(toState);
+  const connectClick$ = 
+    sources.DOM.select('.connect-btn').events('click');
+
+  const disconnectClick$ =
+    sources.DOM.select('.disconnect-btn').events('click');
+  // having a problem calling RxJs methods on these objects
+  // typescript objects
+
+  // const connectionCount$: Rx.Observable<number> =
+  //   Rx.Observable.of(0)
+  //     .concat(connectClick$.scan(addOne, 0));
+
+  // const disconnectCount$: Rx.Observable<number> =
+  //   Rx.Observable.of(0)
+  //     .concat(disconnectClick$.scan(addOne, 0));
+
+  const stateSource$ = Rx.Observable.combineLatest(
+    graph$,
+    // connectionCount$,
+    // disconnectCount$,
+  );
+
+  const state$ = stateSource$.map(toState);
 
   const vtree$ = state$.map(toView);
 
