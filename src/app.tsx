@@ -1,227 +1,278 @@
 import * as Rx from 'rxjs'
 import {Sources, Sinks} from './interfaces'
 
-interface IPoint {
+type Point = {
   x: number;
   y: number;
 }
 
-interface INode {
+type Node = {
+  diameter: number;
   label: string;
-  height: number;
-  width: number;
-  point: IPoint;
+  point: Point;
 }
 
-const nodes: Array<INode> = [
+// positions and sizes based on 1:1.25 module scale
+// modular scale: http://www.modularscale.com/?1,1.5&em&1.25
+// 1rem @16px 
+// x-axis increments are multiples of 10.25px (0.64rem)
+// y-axis increments are multiples of 48.832px (3.052em)
+const nodes: Array<Node> = [
   {
+    diameter: 10.24,
     label: 'connection$',
-    height: 10,
     point: {
-      x: 20,
-      y: 10,
+      x: 20.48,
+      y: 10.24,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'socket$',
-    height: 10,
     point: {
-      x: 30,
-      y: 50,
+      x: 30.72,
+      y: 59.072,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'close$',
-    height: 10,
     point: {
-      x: 30,
-      y: 90,
+      x: 30.72,
+      y: 107.904,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'closeCount$',
-    height: 10,
     point: {
-      x: 30,
-      y: 130,
+      x: 30.72,
+      y: 156.736,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'connectionCount$',
-    height: 10,
     point: {
-      x: 10,
-      y: 170,
+      x: 10.24,
+      y: 205.568,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'combinedCount$',
-    height: 10,
     point: {
-      x: 20,
-      y: 210,
+      x: 20.48,
+      y: 254.40,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'currentCount$',
-    height: 10,
     point: {
-      x: 20,
-      y: 250,
+      x: 20.48,
+      y: 303.232,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'pause$',
-    height: 10,
     point: {
-      x: 20,
-      y: 290,
+      x: 20.48,
+      y: 352.064,
     },
-    width: 10,
   }, {
+    diameter: 10.24,
     label: 'tick$',
-    height: 10,
     point: {
-      x: 20,
-      y: 330,
+      x: 20.48,
+      y: 400.896,
     },
-    width: 10,
   }
 ];
 
-interface IEdge {
+type Edge = {
   label: string;
-  points: Array<IPoint>
+  points: Array<Point>
 }
 
-
-const edges: Array<IEdge> = [
-  { 
-    label: '',
+const edges: Array<Edge> = [
+  {
+    label: 'connection$ -> connectionCount$',
     points: [
       {
-        x: 20,
-        y: 10,
+        x: 20.48,
+        y: 10.24,
       }, {
-        x: 10,
-        y: 50,
+        x: 10.24,
+        y: 59.072,
       }, {
-        x: 10,
-        y: 170,
+        x: 10.24,
+        y: 205.568,
       },
     ],
-  }, { 
-    label: '',
+  }, {
+    label: 'connection$ -> socket$',
     points: [
       {
-        x: 20,
-        y: 10,
+        x: 20.48,
+        y: 10.25,
       }, {
-        x: 30,
-        y: 50,
-      }
-    ],
-  }, { 
-    label: '',
-    points: [
-      {
-        x: 30,
-        y: 50,
-      }, {
-        x: 30,
-        y: 90,
-      }
-    ],
-  }, { 
-    label: '',
-    points: [
-      {
-        x: 30,
-        y: 90,
-      }, {
-        x: 30,
-        y: 130,
+        x: 30.72,
+        y: 59.072,
       }
     ],
   }, {
-    label: '',
+    label: 'socket$ -> close$',
     points: [
       {
-        x: 30,
-        y: 130,
+        x: 30.72,
+        y: 59.072,
       }, {
-        x: 30,
-        y: 170,
+        x: 30.72,
+        y: 107.904,
+      }
+    ],
+  }, {
+    label: 'close$ -> closeCount$',
+    points: [
+      {
+        x: 30.72,
+        y: 107.904,
       }, {
-        x: 20,
-        y: 210,
+        x: 30.72,
+        y: 156.736,
+      }
+    ],
+  }, {
+    label: 'closeCount$ -> combinedCount$',
+    points: [
+      {
+        x: 30.72,
+        y: 156.736,
+      }, {
+        x: 30.72,
+        y: 205.568,
+      }, {
+        x: 20.48,
+        y: 254.40,
       }
     ]
   }, {
-    label: '',
+    label: 'connectionCount$ -> combinedCount$',
     points: [
       {
-        x: 10,
-        y: 170,
+        x: 10.24,
+        y: 205.568,
       }, {
-        x: 20,
-        y: 210,
+        x: 20.48,
+        y: 254.40,
       }
     ]
   }, {
-    label: '',
+    label: 'combinedCount$ -> currentCount$',
     points: [
       {
-        x: 20,
-        y: 210,
+        x: 20.48,
+        y: 254.40,
       }, {
-        x: 20,
-        y: 250,
+        x: 20.48,
+        y: 303.232,
       }
     ]
   }, {
-    label: '',
+    label: 'currentCount$ -> pause$',
     points: [
       {
-        x: 20,
-        y: 250,
+        x: 20.48,
+        y: 303.232,
       }, {
-        x: 20,
-        y: 290,
+        x: 20.48,
+        y: 352.064,
       }
     ]
   }, {
-    label: '',
+    label: 'pause$ -> tick$',
     points: [
       {
-        x: 20,
-        y: 290,
+        x: 20.48,
+        y: 352.064,
       }, {
-        x: 20,
-        y: 330,
+        x: 20.48,
+        y: 400.896,
       }
     ]
   },
 ];
 
-interface IGraph {
-  edges: Array<IEdge>;
-  nodes: Array<INode>;
+type Graph = {
+  edges: Array<Edge>;
+  nodes: Array<Node>;
 }
 
-interface IState {
-  graph: IGraph;
+type State = {
+  graph: Graph;
 }
 
-const toState = (graph: IGraph): IState => ({
+const toState = (graph: Graph): State => ({
   graph,
 });
 
-const toView = (state: IState) => {
+
+type NodeProps = {
+  node: Node;
+}
+
+const Node = (props: NodeProps, key: number) => {
+  const { node, } = props;
+
+  return (
+    <g key={key}>
+      <circle 
+        fill="white"
+        stroke="#333"
+        strokeWidth="1.25px"
+        cx={node.point.x} 
+        cy={node.point.y} 
+        r={node.diameter / 2}
+      />
+    </g>
+  );
+}
+
+const toSvgMoveToCmd = (point: Point): string => 
+  `M${point.x} ${point.y}`;
+
+const toSvgLineToCmd = (point: Point): string => 
+  `L${point.x} ${point.y}`;
+
+const toSvgLineToCmds = (points: Array<Point>): string =>
+  points.reduce(
+    (acc, point) => `${acc}${toSvgLineToCmd(point)}`, 
+    ``
+  );
+
+const toSvgPathDAttr = ([ pointsHead, ...pointsTail ]: Array<Point>) => 
+  `${toSvgMoveToCmd(pointsHead)}${toSvgLineToCmds(pointsTail)}`;
+
+type EdgeProps = {
+  edge: Edge;
+};
+
+const Edge = (props: EdgeProps, key: number) => {
+  const { edge, } = props;
+
+  return (
+    <g key={key}>
+      <path 
+        d={toSvgPathDAttr(edge.points)}
+        fill="transparent"
+        stroke="#333"
+        strokeWidth="1.25px"
+      />
+    </g>
+  );
+};
+
+const toView = (state: State) => {
   return (
     <div>
       <svg width="100%">
-        
+        {state.graph.edges.map((edge) => <Edge edge={edge} />)}
+        {state.graph.nodes.map((node) => <Node node={node} />)}
       </svg>
     </div>
   );
@@ -229,7 +280,7 @@ const toView = (state: IState) => {
 
 export function App(sources : Sources) : Sinks {
   const graph$ = Rx.Observable.of({
-    edges, 
+    edges,
     nodes,
   });
 
