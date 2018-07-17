@@ -9,6 +9,7 @@ type Point = {
 type Node = {
   diameter: number;
   label: string;
+  latestValue: string;
   point: Point;
 }
 
@@ -25,37 +26,43 @@ const nodes: Array<Node> = [
       x: 20.48,
       y: 10.24,
     },
+    latestValue: '[WebSocket, http.IncomingMessage]'
   }, {
     diameter: 10.24,
-    label: 'socket$',
+    label: 'connectionCount$',
+    latestValue: '3',
     point: {
-      x: 30.72,
+      x: 10.24,
       y: 59.072,
     },
   }, {
     diameter: 10.24,
-    label: 'close$',
+    label: 'socket$',
+    latestValue: 'WebSocket',
     point: {
       x: 30.72,
       y: 107.904,
     },
   }, {
     diameter: 10.24,
-    label: 'closeCount$',
+    label: 'close$',
+    latestValue: '[status, reason]',
     point: {
       x: 30.72,
       y: 156.736,
     },
   }, {
     diameter: 10.24,
-    label: 'connectionCount$',
+    label: 'closeCount$',
+    latestValue: '2',
     point: {
-      x: 10.24,
+      x: 30.72,
       y: 205.568,
     },
   }, {
     diameter: 10.24,
     label: 'combinedCount$',
+    latestValue: '[3, 2]',
     point: {
       x: 20.48,
       y: 254.40,
@@ -63,6 +70,7 @@ const nodes: Array<Node> = [
   }, {
     diameter: 10.24,
     label: 'currentCount$',
+    latestValue: '1',
     point: {
       x: 20.48,
       y: 303.232,
@@ -70,6 +78,7 @@ const nodes: Array<Node> = [
   }, {
     diameter: 10.24,
     label: 'pause$',
+    latestValue: 'true',
     point: {
       x: 20.48,
       y: 352.064,
@@ -77,6 +86,7 @@ const nodes: Array<Node> = [
   }, {
     diameter: 10.24,
     label: 'tick$',
+    latestValue: 'tick',
     point: {
       x: 20.48,
       y: 400.896,
@@ -99,10 +109,7 @@ const edges: Array<Edge> = [
       }, {
         x: 10.24,
         y: 59.072,
-      }, {
-        x: 10.24,
-        y: 205.568,
-      },
+      }
     ],
   }, {
     label: 'connection$ -> socket$',
@@ -113,6 +120,9 @@ const edges: Array<Edge> = [
       }, {
         x: 30.72,
         y: 59.072,
+      }, {
+        x: 30.72,
+        y: 107.904,
       }
     ],
   }, {
@@ -120,10 +130,10 @@ const edges: Array<Edge> = [
     points: [
       {
         x: 30.72,
-        y: 59.072,
+        y: 107.904,
       }, {
         x: 30.72,
-        y: 107.904,
+        y: 156.736
       }
     ],
   }, {
@@ -131,19 +141,16 @@ const edges: Array<Edge> = [
     points: [
       {
         x: 30.72,
-        y: 107.904,
+        y: 156.736,
       }, {
         x: 30.72,
-        y: 156.736,
+        y: 205.568,
       }
     ],
   }, {
     label: 'closeCount$ -> combinedCount$',
     points: [
       {
-        x: 30.72,
-        y: 156.736,
-      }, {
         x: 30.72,
         y: 205.568,
       }, {
@@ -156,11 +163,14 @@ const edges: Array<Edge> = [
     points: [
       {
         x: 10.24,
+        y: 59.072,
+      }, {
+        x: 10.24,
         y: 205.568,
       }, {
         x: 20.48,
         y: 254.40,
-      }
+      },
     ]
   }, {
     label: 'combinedCount$ -> currentCount$',
@@ -211,16 +221,86 @@ const toState = (graph: Graph): State => ({
   graph,
 });
 
+type TimelineProps = {
+  node: Node;
+}
+
+const Timeline = (props: TimelineProps) => {
+  const { node, } = props;
+  // const pathEndXCoord = 737.28;
+  // const pathEndXCoord = 568.432;
+  // const pathEndXCoord = 710.528;
+  const pathStartXCoord = 40.96;
+  const pathEndXCoord = 825;
+  const arrowHeadLength = 4.192;
+
+  return (
+    <g>
+      <path
+        d={`M${pathStartXCoord} ${node.point.y}L${pathEndXCoord} ${node.point.y}`}
+        fill="transparent" 
+        stroke="#333" 
+        strokeWidth="1.25px" 
+      />
+      <path 
+        d={`M${pathEndXCoord - 10.24},${node.point.y + arrowHeadLength} L${pathEndXCoord - 10.24},${node.point.y - arrowHeadLength}`}
+        fill="transparent"
+        stroke="#333"
+        strokeWidth="1.25px" 
+      />
+      <path 
+        d={`M${pathEndXCoord - arrowHeadLength},${node.point.y - arrowHeadLength} L${pathEndXCoord + 1},${node.point.y}`}
+        fill="transparent"
+        stroke="#333"
+        strokeWidth="1.25px" 
+      />
+      <path 
+        d={`M${pathEndXCoord - arrowHeadLength},${node.point.y + arrowHeadLength} L${pathEndXCoord + 1},${node.point.y}`}
+        fill="transparent"
+        stroke="#333"
+        strokeWidth="1.25px" 
+      />
+      <text 
+        className="code"
+        fill="#333"
+        fontSize="10" 
+        x={pathEndXCoord + 10.24} 
+        y={node.point.y + 3}>
+          {node.latestValue}
+        </text>
+      {/*
+      <text 
+        className="label"
+        fill="#333"
+        fontSize="8" 
+        x={pathStartXCoord} 
+        y={node.point.y + 20}>
+          {node.label}
+      </text>
+      */}
+      <circle 
+        fill="#333"
+        stroke="#333"
+        strokeWidth="1.25px"
+        cx={node.point.x + 50} 
+        cy={node.point.y} 
+        r={/*5.248 / 2 */6.56 / 2}
+      />
+    </g>
+  );
+};
 
 type NodeProps = {
   node: Node;
 }
+
 
 const Node = (props: NodeProps, key: number) => {
   const { node, } = props;
 
   return (
     <g key={key}>
+      <Timeline node={node} />
       <circle 
         fill="white"
         stroke="#333"
@@ -274,6 +354,8 @@ const toView = (state: State) => {
         {state.graph.edges.map((edge) => <Edge edge={edge} />)}
         {state.graph.nodes.map((node) => <Node node={node} />)}
       </svg>
+      <button>Connect</button>
+      <button>Disconnect</button>
     </div>
   );
 };
