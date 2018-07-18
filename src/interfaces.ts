@@ -1,6 +1,7 @@
 import * as Rx from 'rxjs'
 import {Observable} from 'rxjs'
-import {DOMSource, VNode} from '@cycle/dom'
+import {VNode} from '@cycle/dom'
+import {DOMSource} from '@cycle/dom/rxjs-typings'
 
 export type Sources = {
   DOM : DOMSource;

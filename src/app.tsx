@@ -215,12 +215,16 @@ type Graph = {
 
 type State = {
   graph: Graph;
+  isDisconnectDisabled: boolean;
 }
 
 const toState = ([ 
   graph,
-]: [ Graph ]): State => ({
+  connectionCount,
+  disconnectionCount,
+]: [ Graph, number, number ]): State => ({
   graph,
+  isDisconnectDisabled: connectionCount <= disconnectionCount,
 });
 
 type TimelineProps = {
@@ -270,23 +274,13 @@ const Timeline = (props: TimelineProps) => {
         y={node.point.y + 3}>
           {node.latestValue}
         </text>
-      {/*
-      <text 
-        className="label"
-        fill="#333"
-        fontSize="8" 
-        x={pathStartXCoord} 
-        y={node.point.y + 20}>
-          {node.label}
-      </text>
-      */}
       <circle 
         fill="#333"
         stroke="#333"
         strokeWidth="1.25px"
         cx={node.point.x + 50} 
         cy={node.point.y} 
-        r={/*5.248 / 2 */6.56 / 2}
+        r={6.56 / 2}
       />
     </g>
   );
@@ -297,11 +291,11 @@ type NodeProps = {
 }
 
 
-const Node = (props: NodeProps, key: number) => {
+const Node = (props: NodeProps) => {
   const { node, } = props;
 
   return (
-    <g key={key}>
+    <g>
       <Timeline node={node} />
       <circle 
         fill="white"
@@ -334,11 +328,11 @@ type EdgeProps = {
   edge: Edge;
 };
 
-const Edge = (props: EdgeProps, key: number) => {
+const Edge = (props: EdgeProps) => {
   const { edge, } = props;
 
   return (
-    <g key={key}>
+    <g>
       <path 
         d={toSvgPathDAttr(edge.points)}
         fill="transparent"
@@ -363,6 +357,7 @@ const toView = (state: State) => {
       </button>
       <button 
         className="disconnect-btn"
+        disabled={state.isDisconnectDisabled}
       >
           Disconnect
       </button>
@@ -380,18 +375,13 @@ export function App(sources : Sources) : Sinks {
     nodes,
   });
 
-  const connectClick$: any = 
+  const connectClick$ = 
     sources.DOM.select('.connect-btn').events('click');
 
-  const disconnectClick$: any =
+  const disconnectClick$ =
     sources.DOM.select('.disconnect-btn').events('click');
 
-  // console.log(disconnectClick$ instanceof Rx.Observable); // true
-  // return typed as Stream<Event>: https://github.com/cyclejs/cyclejs/blob/master/dom/src/DOMSource.ts#L18
-  // having a problem calling RxJs methods on these objects
-  // typescript objects
-
-  const connectionCount$: Rx.Observable<number> =
+  const connectionCount$ =
     Rx.Observable.of(0)
       .concat(connectClick$.scan(addOne, 0));
 
@@ -401,8 +391,8 @@ export function App(sources : Sources) : Sinks {
 
   const stateSource$ = Rx.Observable.combineLatest(
     graph$,
-    // connectionCount$,
-    // disconnectCount$,
+    connectionCount$,
+    disconnectCount$,
   );
 
   const state$ = stateSource$.map(toState);
