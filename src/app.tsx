@@ -380,21 +380,24 @@ export function App(sources : Sources) : Sinks {
     nodes,
   });
 
-  const connectClick$ = 
+  const connectClick$: any = 
     sources.DOM.select('.connect-btn').events('click');
 
-  const disconnectClick$ =
+  const disconnectClick$: any =
     sources.DOM.select('.disconnect-btn').events('click');
+
+  // console.log(disconnectClick$ instanceof Rx.Observable); // true
+  // return typed as Stream<Event>: https://github.com/cyclejs/cyclejs/blob/master/dom/src/DOMSource.ts#L18
   // having a problem calling RxJs methods on these objects
   // typescript objects
 
-  // const connectionCount$: Rx.Observable<number> =
-  //   Rx.Observable.of(0)
-  //     .concat(connectClick$.scan(addOne, 0));
+  const connectionCount$: Rx.Observable<number> =
+    Rx.Observable.of(0)
+      .concat(connectClick$.scan(addOne, 0));
 
-  // const disconnectCount$: Rx.Observable<number> =
-  //   Rx.Observable.of(0)
-  //     .concat(disconnectClick$.scan(addOne, 0));
+  const disconnectCount$ =
+    Rx.Observable.of(0)
+      .concat(disconnectClick$.scan(addOne, 0));
 
   const stateSource$ = Rx.Observable.combineLatest(
     graph$,
