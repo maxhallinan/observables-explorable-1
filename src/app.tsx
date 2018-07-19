@@ -220,11 +220,29 @@ type State = {
 
 const toState = ([ 
   graph,
+  connection,
   connectionCount,
-  disconnectionCount,
-]: [ Graph, number, number ]): State => ({
+  socket,
+  close,
+  closeCount,
+  combinedCount,
+  currentCount,
+  pause,
+  tick,
+]: [ 
+  Graph, 
+  Array<string>,
+  number, 
+  string,
+  Array<string>,
+  number,
+  Array<number>,
+  number,
+  boolean,
+  number
+]): State => ({
   graph,
-  isDisconnectDisabled: connectionCount <= disconnectionCount,
+  isDisconnectDisabled: connectionCount <= closeCount,
 });
 
 type TimelineProps = {
@@ -233,9 +251,6 @@ type TimelineProps = {
 
 const Timeline = (props: TimelineProps) => {
   const { node, } = props;
-  // const pathEndXCoord = 737.28;
-  // const pathEndXCoord = 568.432;
-  // const pathEndXCoord = 710.528;
   const pathStartXCoord = 40.96;
   const pathEndXCoord = 825;
   const arrowHeadLength = 4.192;
@@ -369,6 +384,12 @@ const add = (x1: number) => (x2: number): number => x1 + x2;
 
 const addOne = add(1);
 
+const subtract = (x1: number) => (x2: number): number => x1 - x1;
+
+const head = (xs: Array<any>): any => xs[0];
+
+const isPaused = (currentCount: number): boolean => currentCount < 1;
+
 export function App(sources : Sources) : Sinks {
   const graph$ = Rx.Observable.of({
     edges,
@@ -378,21 +399,45 @@ export function App(sources : Sources) : Sinks {
   const connectClick$ = 
     sources.DOM.select('.connect-btn').events('click');
 
+  const connection$ =
+    connectClick$.mapTo([ `WebSocket`, `http.IncomingMessage`, ]);
+
+  const connectionCount$ = connection$.scan(addOne, 0);
+
+  const socket$ =
+    connection$.map(head);
+
   const disconnectClick$ =
     sources.DOM.select('.disconnect-btn').events('click');
 
-  const connectionCount$ =
-    Rx.Observable.of(0)
-      .concat(connectClick$.scan(addOne, 0));
+  const close$ = disconnectClick$.mapTo([ `code`, `reason`, ]);
 
-  const disconnectCount$ =
-    Rx.Observable.of(0)
-      .concat(disconnectClick$.scan(addOne, 0));
+  const closeCount$ = disconnectClick$.scan(addOne, 0);
+
+  const combinedCount$ = 
+    Rx.Observable.combineLatest(connectionCount$, closeCount$);
+
+  const currentCount$ = 
+    combinedCount$.map(([ x1, x2 ]: Array<number>): number => subtract(x1)(x2));
+
+  const pause$ = currentCount$.map(isPaused);
+
+  const tick$ = pause$.switchMap(
+    (isPaused: boolean): Rx.Observable<number> => 
+      isPaused ? Rx.Observable.never() : Rx.Observable.timer(0, 1000)
+  );
 
   const stateSource$ = Rx.Observable.combineLatest(
     graph$,
-    connectionCount$,
-    disconnectCount$,
+    connection$.startWith([]),
+    connectionCount$.startWith(0),
+    socket$.startWith(''),
+    close$.startWith([]),
+    closeCount$.startWith(0),
+    combinedCount$.startWith([ 0, 0, ]),
+    currentCount$.startWith(0),
+    pause$.startWith(true),
+    tick$.startWith(0),
   );
 
   const state$ = stateSource$.map(toState);
