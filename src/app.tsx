@@ -365,6 +365,9 @@ const toView = (state: State) => {
         {state.graph.edges.map((edge) => <Edge edge={edge} />)}
         {state.graph.nodes.map((node) => <Node node={node} />)}
       </svg>
+      <div>
+        <input width="100%" type="range" min="0" max="100" value="7" step="1" />
+      </div>
       <button 
         className="connect-btn"
       >
