@@ -235,12 +235,12 @@ type Graph = {
 }
 
 type TimelineTable = {
-  connections: Timeline<[string, string]>;
+  connections: Timeline<string>;
   connectionCounts: Timeline<number>;
   sockets: Timeline<string>;
-  closes: Timeline<[string, string]>;
+  closes: Timeline<string>;
   closeCounts: Timeline<number>;
-  combinedCounts: Timeline<number>;
+  combinedCounts: Timeline<Array<number>>;
   currentCounts: Timeline<number>;
   pauses: Timeline<boolean>;
   ticks: Timeline<number>;
@@ -448,17 +448,17 @@ export function App(sources : Sources) : Sinks {
     sources.DOM.select('.connect-btn').events('click');
 
   const connection$ =
-    connectClick$.mapTo([ `WebSocket`, `http.IncomingMessage`, ]);
+    connectClick$.mapTo(`[ WebSocket, http.IncomingMessage ]`);
 
   const connectionCount$ = connection$.scan(addOne, 0).startWith(0);
 
   const socket$ =
-    connection$.map(head);
+    connection$.mapTo(`WebSocket`);
 
   const disconnectClick$ =
     sources.DOM.select('.disconnect-btn').events('click');
 
-  const close$ = disconnectClick$.mapTo([ `code`, `reason`, ]);
+  const close$ = disconnectClick$.mapTo(`[ code, reason ]`);
 
   const closeCount$ = disconnectClick$.scan(addOne, 0).startWith(0);
 
@@ -475,17 +475,59 @@ export function App(sources : Sources) : Sinks {
       isPaused ? Rx.Observable.never() : Rx.Observable.timer(0, 1000)
   );
 
-  const timelineTable$ = Rx.Observable.combineLatest(
+  /*
+    Combining the timeline streams in three steps is necessary to assert the 
+    type of each stream.
+    The arguments to `combineLatest` are typed an array when called on more 
+    than six streams.
+    Example: `Rx.Observable.combineLatest( Rx.Observable.of(true), Rx.Observable.of(''), Rx.Observable.of(1), Rx.Observable.of(true), Rx.Observable.of(''), Rx.Observable.of(1), Rx.Observable.of(2), Rx.Observable.of(''), Rx.Observable.of(false),).map(([ x1, x2, x3, x4, x5, x6, x7, x8, x9, ]: [ boolean, string, number, boolean, string, number, number, string, boolean ]) => ({ x1, x2, x3, x4, x5, x6, x7, x8, x9 }));`
+    It is possible to type that array as a union of the types: 
+    `Array<Timeline<string | number | ...>>`.
+    But then it is not possible to go from this type to the State type, which
+    types each stream as one specific side of that union.
+  */
+  const timeline1$ = Rx.Observable.combineLatest(
     connection$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     connectionCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     socket$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     close$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    closeCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
+  );
+
+  const timeline2$ = Rx.Observable.combineLatest(
     combinedCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     currentCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     pause$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     tick$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-  ).map(([
+  );
+
+  const timeline$= Rx.Observable.combineLatest(
+    timeline1$,
+    timeline2$,
+    ([ s1, s2, s3, s4, s5 ]: [
+      Timeline<string>, // connections
+      Timeline<number>, // connectionCounts
+      Timeline<string>, // sockets
+      Timeline<string>, // closes
+      Timeline<number> // closeCounts
+    ], [ s6, s7, s8, s9 ]: [
+      Timeline<Array<number>>, // combinedCounts
+      Timeline<number>, // currentCounts
+      Timeline<boolean>, // pauses
+      Timeline<number> // ticks
+    ]): [
+      Timeline<string>, // connections
+      Timeline<number>, // connectionCounts
+      Timeline<string>, // sockets
+      Timeline<string>, // closes
+      Timeline<number>, // closeCounts
+      Timeline<Array<number>>, // combinedCounts
+      Timeline<number>, // currentCounts
+      Timeline<boolean>, // pauses
+      Timeline<number> // ticks
+    ] => [ s1, s2, s3, s4, s5, s6, s7, s8, s9 ]
+  );
+
+  const timelineTable$ = timeline$.map(([
     connections,
     connectionCounts,
     sockets,
@@ -495,16 +537,6 @@ export function App(sources : Sources) : Sinks {
     currentCounts,
     pauses,
     ticks,
-  ]: [
-    Timeline<[string, string]>,
-    Timeline<number>,
-    Timeline<string>,
-    Timeline<[string, string]>,
-    Timeline<number>,
-    Timeline<number>,
-    Timeline<number>,
-    Timeline<boolean>,
-    Timeline<number>
   ]): TimelineTable => ({
     connections,
     connectionCounts,
