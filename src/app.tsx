@@ -268,13 +268,20 @@ const toState = ([
 
 type TimelineProps = {
   node: Node;
+  timeline: Timeline<any>;
 }
 
 const Timeline = (props: TimelineProps) => {
-  const { node, } = props;
+  const { node, timeline, } = props;
   const pathStartXCoord = 40.96;
   const pathEndXCoord = 825;
   const arrowHeadLength = 4.192;
+  const currentValue = timeline.length > 0 
+    ? timeline[timeline.length - 1][1]
+    : '';
+  const displayValue = typeof currentValue === 'string'
+    ? currentValue
+    : JSON.stringify(currentValue);
 
   return (
     <g>
@@ -308,7 +315,7 @@ const Timeline = (props: TimelineProps) => {
         fontSize="10"
         x={pathEndXCoord + 10.24}
         y={node.point.y + 3}>
-          {node.latestValue}
+          {displayValue}
         </text>
       <circle
         fill="#333"
@@ -334,7 +341,7 @@ const Node = (props: NodeProps) => {
 
   return (
     <g>
-      <Timeline node={node} />
+      <Timeline node={node} timeline={timeline} />
       <circle
         fill="white"
         stroke="#333"
@@ -491,6 +498,7 @@ export function App(sources : Sources) : Sinks {
     connectionCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     socket$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
     close$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
+    closeCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
   );
 
   const timeline2$ = Rx.Observable.combineLatest(
