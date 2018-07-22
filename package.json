@@ -8,9 +8,8 @@
   "dependencies": {
     "@cycle/dom": "18.3.0",
     "@cycle/rxjs-run": "7.1.0",
-    "awesome-typescript-loader": "3.2.3",
-    "rxjs": "5.4.3",
-    "typescript": "2.5.3"
+    "d3": "^5.5.0",
+    "rxjs": "5.4.3"
   },
   "scripts": {
     "start": "cycle-scripts start",
@@ -19,7 +18,7 @@
     "eject": "cycle-scripts eject"
   },
   "cca": {
-    "language": "typescript",
+    "language": "javascript",
     "streamLib": "rxjs"
   }
 }

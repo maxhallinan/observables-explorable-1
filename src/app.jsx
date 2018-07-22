@@ -1,36 +1,11 @@
+import * as d3 from 'd3';
 import * as Rx from 'rxjs'
-import {Sources, Sinks} from './interfaces'
 
-type Point = {
-  x: number;
-  y: number;
-}
-
-type TimelineName 
-  = 'connections' 
-  | 'connectionCounts' 
-  | 'sockets'  
-  | 'closes'
-  | 'closeCounts'
-  | 'combinedCounts'
-  | 'currentCounts'
-  | 'pauses'
-  | 'ticks'
-
-type Node = {
-  diameter: number;
-  label: string;
-  latestValue: string;
-  point: Point;
-  timelineName: TimelineName;
-}
-
-// positions and sizes based on 1:1.25 module scale
-// modular scale: http://www.modularscale.com/?1,1.5&em&1.25
-// 1rem @16px
-// x-axis increments are multiples of 10.25px (0.64rem)
+// The positions and sizes based on a 1:1.25 modular scale where 1em = 16px:
+// http://www.modularscale.com/?1,1.5&em&1.25
+// x-axis increments are multiples of 10.25px (0.64em)
 // y-axis increments are multiples of 48.832px (3.052em)
-const nodes: Array<Node> = [
+const nodes = [
   {
     diameter: 10.24,
     label: 'connection$',
@@ -115,12 +90,7 @@ const nodes: Array<Node> = [
   }
 ];
 
-type Edge = {
-  label: string;
-  points: Array<Point>
-}
-
-const edges: Array<Edge> = [
+const edges = [
   {
     label: 'connection$ -> connectionCount$',
     points: [
@@ -229,59 +199,50 @@ const edges: Array<Edge> = [
   },
 ];
 
-type Graph = {
-  edges: Array<Edge>;
-  nodes: Array<Node>;
-}
-
-type TimelineTable = {
-  connections: Timeline<string>;
-  connectionCounts: Timeline<number>;
-  sockets: Timeline<string>;
-  closes: Timeline<string>;
-  closeCounts: Timeline<number>;
-  combinedCounts: Timeline<Array<number>>;
-  currentCounts: Timeline<number>;
-  pauses: Timeline<boolean>;
-  ticks: Timeline<number>;
-}
-
-type State = {
-  graph: Graph;
-  isDisconnectDisabled: boolean;
-  timelineTable: TimelineTable;
-}
-
 const toState = ([
   graph,
   isDisconnectDisabled,
   timelineTable,
-]: [
-  Graph,
-  boolean,
-  TimelineTable
-]): State => ({
+  timeRange,
+  currentRangeEnd,
+]) => ({
   graph,
   isDisconnectDisabled,
   timelineTable,
+  timeRange,
+  currentRangeEnd,
 });
 
-type TimelineProps = {
-  node: Node;
-  timeline: Timeline<any>;
-}
+const Timeline = (props) => {
+  const { node, timeline, timeRange, } = props;
 
-const Timeline = (props: TimelineProps) => {
-  const { node, timeline, } = props;
-  const pathStartXCoord = 40.96;
-  const pathEndXCoord = 825;
-  const arrowHeadLength = 4.192;
   const currentValue = timeline.length > 0 
     ? timeline[timeline.length - 1][1]
     : '';
+
   const displayValue = typeof currentValue === 'string'
     ? currentValue
     : JSON.stringify(currentValue);
+
+  const pathStartXCoord = 40.96;
+  const pathEndXCoord = 55.51 * 16;
+  const arrowHeadLength = 0.262 * 16;
+  const circleSize = 0.512 * 16;
+  const barXCoord = pathEndXCoord - (16 * 0.64);
+  const timelineEnd = barXCoord - (circleSize / 2) - 2.25 - arrowHeadLength;
+  const maxCircles = 
+    Math.floor((timelineEnd - pathStartXCoord) / (circleSize + arrowHeadLength));
+  const domainEnd = timeRange[1];
+  const domainStart = domainEnd - (maxCircles * 1000);
+  const domain = [ domainStart, domainEnd, ];
+  const range = [
+    40.96 + (6.56 / 2), // align left edge of circle with start of timeline
+    timelineEnd,
+  ];
+
+  const xScale = d3.scaleLinear()
+    .domain(domain)
+    .range(range);
 
   return (
     <g>
@@ -315,33 +276,36 @@ const Timeline = (props: TimelineProps) => {
         fontSize="10"
         x={pathEndXCoord + 10.24}
         y={node.point.y + 3}>
-          {displayValue}
+          {node.label}
         </text>
-      <circle
-        fill="#333"
-        stroke="#333"
-        strokeWidth="1.25px"
-        cx={node.point.x + 50}
-        cy={node.point.y}
-        r={6.56 / 2}
-      />
+      {timeline.filter(([ timestamp ]) => timestamp > domainStart && timestamp <= domainEnd).map(([ timestamp ]) => {
+        return (
+          <circle
+            fill="white"
+            stroke="#333"
+            strokeWidth="1.5"
+            cx={xScale(timestamp)}
+            cy={node.point.y}
+            r={circleSize / 2}
+          />
+        );
+      })}
     </g>
   );
 };
 
-type NodeProps = {
-  node: Node;
-  timelineTable: TimelineTable;
-}
-
-
-const Node = (props: NodeProps) => {
-  const { node, timelineTable, } = props;
+const Node = (props) => {
+  const { node, timelineTable, timeRange, } = props;
   const timeline = timelineTable[node.timelineName];
 
   return (
     <g>
-      <Timeline node={node} timeline={timeline} />
+      <Timeline 
+        currentRangeEnd={props.currentRangeEnd} 
+        node={node} 
+        timeline={timeline} 
+        timeRange={timeRange} 
+      />
       <circle
         fill="white"
         stroke="#333"
@@ -354,26 +318,19 @@ const Node = (props: NodeProps) => {
   );
 }
 
-const toSvgMoveToCmd = (point: Point): string =>
-  `M${point.x} ${point.y}`;
+const toSvgMoveToCmd = (point) => `M${point.x} ${point.y}`;
 
-const toSvgLineToCmd = (point: Point): string =>
-  `L${point.x} ${point.y}`;
+const toSvgLineToCmd = (point) => `L${point.x} ${point.y}`;
 
-const toSvgLineToCmds = (points: Array<Point>): string =>
-  points.reduce(
-    (acc, point) => `${acc}${toSvgLineToCmd(point)}`,
-    ``
-  );
+const toSvgLineToCmds = (points) => points.reduce(
+  (acc, point) => `${acc}${toSvgLineToCmd(point)}`,
+  ``
+);
 
-const toSvgPathDAttr = ([ pointsHead, ...pointsTail ]: Array<Point>) =>
+const toSvgPathDAttr = ([ pointsHead, ...pointsTail ]) =>
   `${toSvgMoveToCmd(pointsHead)}${toSvgLineToCmds(pointsTail)}`;
 
-type EdgeProps = {
-  edge: Edge;
-};
-
-const Edge = (props: EdgeProps) => {
+const Edge = (props) => {
   const { edge, } = props;
 
   return (
@@ -388,16 +345,20 @@ const Edge = (props: EdgeProps) => {
   );
 };
 
-const toView = (state: State) => {
+const toView = (state) => {
   return (
     <div>
       <svg width="100%">
         {state.graph.edges.map((edge) => <Edge edge={edge} />)}
-        {state.graph.nodes.map((node) => <Node node={node} timelineTable={state.timelineTable} />)}
+        {state.graph.nodes.map((node) => (
+          <Node 
+            currentRangeEnd={state.currentRangeEnd} 
+            node={node} 
+            timelineTable={state.timelineTable} 
+            timeRange={state.timeRange} 
+          />
+        ))}
       </svg>
-      <div>
-        <input width="100%" type="range" min="0" max="100" value="7" step="1" />
-      </div>
       <button
         className="connect-btn"
       >
@@ -409,47 +370,41 @@ const toView = (state: State) => {
       >
           Disconnect
       </button>
+      <input 
+        className="range-input"
+        max={state.timeRange[1]} 
+        min={state.timeRange[0]} 
+        type="range" 
+        value={state.currentRangeEnd}
+      />
     </div>
   );
 };
 
-const add = (x1: number) => (x2: number): number => x1 + x2;
+const add = (x1) => (x2) => x1 + x2;
 
 const addOne = add(1);
 
-const subtract = (x1: number) => (x2: number): number => x1 - x2;
+const subtract = (x1) => (x2) => x1 - x2;
 
-const head = (xs: Array<any>): any => xs[0];
+const head = (xs) => xs[0];
 
-const isPaused = (currentCount: number): boolean => currentCount < 1;
+const isPaused = (currentCount) => currentCount < 1;
 
-type TimeIndexed<A> = [ number, A ];
+const toTimeIndexed = (x) => [ Date.now(), x, ];
 
-function toTimeIndexed<A>(x: A): TimeIndexed<A> {
-  return [ Date.now(), x ];
-}
+const toTimeline = (timeline, timeIndexed) => [ ...timeline, timeIndexed, ];
 
-type Timeline<A> = Array<TimeIndexed<A>>;
-
-function toTimeline<A>(
-  timeline: Timeline<A>,
-  timeIndexed: TimeIndexed<A>
-): Timeline<A> {
-  return [
-    ...timeline,
-    timeIndexed
-  ];
-}
-
-function append<A>(xs: Array<A>, x: A): Array<A> {
-  return [ ...xs, x ];
-}
-
-export function App(sources : Sources) : Sinks {
+export function App(sources) {
   const graph$ = Rx.Observable.of({
     edges,
     nodes,
   });
+
+  const rangeInputChange$ = sources.DOM.select('.range-input').events('change');
+
+  const rangeInputValue$ = rangeInputChange$
+    .map((event) => Number(event.target.value));
 
   const connectClick$ =
     sources.DOM.select('.connect-btn').events('click');
@@ -473,66 +428,53 @@ export function App(sources : Sources) : Sinks {
     Rx.Observable.combineLatest(connectionCount$, closeCount$);
 
   const currentCount$ =
-    combinedCount$.map(([ x1, x2 ]: Array<number>): number => subtract(x1)(x2));
+    combinedCount$.map(([ x1, x2 ]) => subtract(x1)(x2));
 
   const pause$ = currentCount$.map(isPaused);
 
   const tick$ = pause$.switchMap(
-    (isPaused: boolean): Rx.Observable<number> =>
+    (isPaused) =>
       isPaused ? Rx.Observable.never() : Rx.Observable.timer(0, 1000)
   );
 
-  /*
-    Combining the timeline streams in three steps is necessary to assert the 
-    type of each stream.
-    The arguments to `combineLatest` are typed an array when called on more 
-    than six streams.
-    Example: `Rx.Observable.combineLatest( Rx.Observable.of(true), Rx.Observable.of(''), Rx.Observable.of(1), Rx.Observable.of(true), Rx.Observable.of(''), Rx.Observable.of(1), Rx.Observable.of(2), Rx.Observable.of(''), Rx.Observable.of(false),).map(([ x1, x2, x3, x4, x5, x6, x7, x8, x9, ]: [ boolean, string, number, boolean, string, number, number, string, boolean ]) => ({ x1, x2, x3, x4, x5, x6, x7, x8, x9 }));`
-    It is possible to type that array as a union of the types: 
-    `Array<Timeline<string | number | ...>>`.
-    But then it is not possible to go from this type to the State type, which
-    types each stream as one specific side of that union.
-  */
-  const timeline1$ = Rx.Observable.combineLatest(
-    connection$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    connectionCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    socket$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    close$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    closeCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-  );
+  const timelineSources = [
+    connection$,
+    connectionCount$,
+    socket$,
+    close$,
+    closeCount$,
+    combinedCount$,
+    currentCount$,
+    pause$,
+    tick$,
+  ];
 
-  const timeline2$ = Rx.Observable.combineLatest(
-    combinedCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    currentCount$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    pause$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-    tick$.map(toTimeIndexed).scan(toTimeline, []).startWith([]),
-  );
+  const [
+    connectionTimeline$,
+    connectionCountTimeline$,
+    socketTimeline$,
+    closeTimeline$,
+    closeCountTimeline$,
+    combinedCountTimeline$,
+    currentCountTimeline$,
+    pauseTimeline$,
+    tickTimeline$,
+  ] = timelineSources.map((observable) => observable
+      .map(toTimeIndexed)
+      .scan(toTimeline, [])
+      .startWith([])
+    );
 
-  const timeline$= Rx.Observable.combineLatest(
-    timeline1$,
-    timeline2$,
-    ([ s1, s2, s3, s4, s5 ]: [
-      Timeline<string>, // connections
-      Timeline<number>, // connectionCounts
-      Timeline<string>, // sockets
-      Timeline<string>, // closes
-      Timeline<number> // closeCounts
-    ], [ s6, s7, s8, s9 ]: [
-      Timeline<Array<number>>, // combinedCounts
-      Timeline<number>, // currentCounts
-      Timeline<boolean>, // pauses
-      Timeline<number> // ticks
-    ]): [
-      Timeline<string>, // connections
-      Timeline<number>, // connectionCounts
-      Timeline<string>, // sockets
-      Timeline<string>, // closes
-      Timeline<number>, // closeCounts
-      Timeline<Array<number>>, // combinedCounts
-      Timeline<number>, // currentCounts
-      Timeline<boolean>, // pauses
-      Timeline<number> // ticks
-    ] => [ s1, s2, s3, s4, s5, s6, s7, s8, s9 ]
+  const timeline$ = Rx.Observable.combineLatest(
+    connectionTimeline$,
+    connectionCountTimeline$,
+    socketTimeline$,
+    closeTimeline$,
+    closeCountTimeline$,
+    combinedCountTimeline$,
+    currentCountTimeline$,
+    pauseTimeline$,
+    tickTimeline$,  
   );
 
   const timelineTable$ = timeline$.map(([
@@ -545,7 +487,7 @@ export function App(sources : Sources) : Sinks {
     currentCounts,
     pauses,
     ticks,
-  ]): TimelineTable => ({
+  ]) => ({
     connections,
     connectionCounts,
     sockets,
@@ -557,10 +499,19 @@ export function App(sources : Sources) : Sinks {
     ticks,
   }));
 
+  const timeRange$ = timeline$
+    .map((timelines) => timelines.reduce((ts, t) => [ ...ts, ...t ], []))
+    .map((timelines) => timelines.map(([ timestamp ]) => timestamp))
+    .map((timestamps) => timestamps.sort((n1, n2) => n1 - n2))
+    .map((timestamps) => [ timestamps[0], timestamps[timestamps.length - 1], ]);
+
   const isDisconnectDisabled$ = Rx.Observable.combineLatest(
     connectionCount$,
     closeCount$,
-  ).map(function ([ connectionCount, closeCount]: [ number, number ]): boolean {
+  ).map(function ([ 
+    connectionCount, 
+    closeCount,
+  ]) {
     return connectionCount <= closeCount;
   });
 
@@ -568,6 +519,7 @@ export function App(sources : Sources) : Sinks {
     graph$,
     isDisconnectDisabled$,
     timelineTable$,
+    timeRange$,
   );
 
   const state$ = stateSource$.map(toState);
