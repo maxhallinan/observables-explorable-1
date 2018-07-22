@@ -319,8 +319,8 @@ const Timeline = (props) => {
         return (
           <circle
             className="timeline-point"
-            fill="#555"
-            stroke="#555"
+            fill="#444"
+            stroke="#444"
             cx={xScale(timestamp)}
             cy={node.point.y}
             r={circleSize / 2}
