@@ -196,6 +196,31 @@ const edges = [
         y: 400.896,
       }
     ]
+  }, {
+    label: 'tick$ ->',
+    points: [
+      {
+        x: 20.48,
+        y: 400.896,
+      }, {
+        x: 20.48,
+        y: 400.896 + (3.052 * 16),
+      }
+    ]
+  }, {
+    label: '->',
+    points: [
+      {
+        x: 20.48 - (0.262 * 16),
+        y: 400.896 + (3.052 * 16) - 4.192,
+      }, {
+        x: 20.48,
+        y: 400.896 + (3.052 * 16),
+      }, {
+        x: 20.48 + (0.262 * 16),
+        y: 400.896 + (3.052 * 16) - 4.192,
+      }
+    ]
   },
 ];
 
@@ -204,36 +229,28 @@ const toState = ([
   isDisconnectDisabled,
   timelineTable,
   timeRange,
-  currentRangeEnd,
+  currentTimeRange,
 ]) => ({
   graph,
   isDisconnectDisabled,
   timelineTable,
   timeRange,
-  currentRangeEnd,
+  currentTimeRange,
 });
 
 const Timeline = (props) => {
-  const { node, timeline, timeRange, } = props;
-
-  const currentValue = timeline.length > 0 
-    ? timeline[timeline.length - 1][1]
-    : '';
-
-  const displayValue = typeof currentValue === 'string'
-    ? currentValue
-    : JSON.stringify(currentValue);
+  const { currentTimeRange, node, timeline, timeRange, } = props;
 
   const pathStartXCoord = 40.96;
   const pathEndXCoord = 55.51 * 16;
   const arrowHeadLength = 0.262 * 16;
-  const circleSize = 0.512 * 16;
+  const circleSize = 0.41 * 16; 
   const barXCoord = pathEndXCoord - (16 * 0.64);
   const timelineEnd = barXCoord - (circleSize / 2) - 2.25 - arrowHeadLength;
   const maxCircles = 
     Math.floor((timelineEnd - pathStartXCoord) / (circleSize + arrowHeadLength));
-  const domainEnd = timeRange[1];
-  const domainStart = domainEnd - (maxCircles * 1000);
+  const domainEnd = currentTimeRange.current;
+  const domainStart = domainEnd - (maxCircles * 750);
   const domain = [ domainStart, domainEnd, ];
   const range = [
     40.96 + (6.56 / 2), // align left edge of circle with start of timeline
@@ -243,6 +260,17 @@ const Timeline = (props) => {
   const xScale = d3.scaleLinear()
     .domain(domain)
     .range(range);
+
+  const currentTimeline = 
+    timeline.filter(([ timestamp ]) => timestamp <= domainEnd);
+
+  const currentValue = currentTimeline.length > 0 
+    ? currentTimeline[currentTimeline.length - 1][1]
+    : '';
+
+  const displayValue = typeof currentValue === 'string'
+    ? currentValue
+    : JSON.stringify(currentValue);
 
   return (
     <g>
@@ -276,14 +304,23 @@ const Timeline = (props) => {
         fontSize="10"
         x={pathEndXCoord + 10.24}
         y={node.point.y + 3}>
+        {/*node.label*/}
+        {displayValue}
+      </text>
+      <text
+        className="code"
+        fill="#333"
+        fontSize="10"
+        x={pathStartXCoord}
+        y={node.point.y + (16 * 1.25)}>
           {node.label}
-        </text>
+      </text>
       {timeline.filter(([ timestamp ]) => timestamp > domainStart && timestamp <= domainEnd).map(([ timestamp ]) => {
         return (
           <circle
-            fill="white"
-            stroke="#333"
-            strokeWidth="1.5"
+            className="timeline-point"
+            fill="#555"
+            stroke="#555"
             cx={xScale(timestamp)}
             cy={node.point.y}
             r={circleSize / 2}
@@ -301,7 +338,7 @@ const Node = (props) => {
   return (
     <g>
       <Timeline 
-        currentRangeEnd={props.currentRangeEnd} 
+        currentTimeRange={props.currentTimeRange} 
         node={node} 
         timeline={timeline} 
         timeRange={timeRange} 
@@ -309,7 +346,6 @@ const Node = (props) => {
       <circle
         fill="white"
         stroke="#333"
-        strokeWidth="1.25px"
         cx={node.point.x}
         cy={node.point.y}
         r={node.diameter / 2}
@@ -352,31 +388,34 @@ const toView = (state) => {
         {state.graph.edges.map((edge) => <Edge edge={edge} />)}
         {state.graph.nodes.map((node) => (
           <Node 
-            currentRangeEnd={state.currentRangeEnd} 
+            currentTimeRange={state.currentTimeRange} 
             node={node} 
             timelineTable={state.timelineTable} 
             timeRange={state.timeRange} 
           />
         ))}
       </svg>
-      <button
-        className="connect-btn"
-      >
-          Connect
-      </button>
-      <button
-        className="disconnect-btn"
-        disabled={state.isDisconnectDisabled}
-      >
-          Disconnect
-      </button>
-      <input 
-        className="range-input"
-        max={state.timeRange[1]} 
-        min={state.timeRange[0]} 
-        type="range" 
-        value={state.currentRangeEnd}
-      />
+      <div className="controls">
+        <button
+          className="connect-btn"
+        >
+            Connect
+        </button>
+        <button
+          className="disconnect-btn"
+          disabled={state.isDisconnectDisabled}
+        >
+            Disconnect
+        </button>
+        <input 
+          className="range-input"
+          max={1} 
+          min={0} 
+          step={0.01}
+          type="range" 
+          value={state.currentTimeRange.currentPercent}
+        />
+      </div>
     </div>
   );
 };
@@ -401,9 +440,14 @@ export function App(sources) {
     nodes,
   });
 
-  const rangeInputChange$ = sources.DOM.select('.range-input').events('change');
+  const rangeInputEvent$ = sources.DOM.select('.range-input').events('input');
 
-  const rangeInputValue$ = rangeInputChange$
+  const rangeInputValue$ = rangeInputEvent$
+    .map((event) => Number(event.target.value));
+
+  const rangeChangeEvent$ = sources.DOM.select('.range-input').events('change');
+
+  const rangeChangeValue$ = rangeChangeEvent$
     .map((event) => Number(event.target.value));
 
   const connectClick$ =
@@ -505,6 +549,26 @@ export function App(sources) {
     .map((timestamps) => timestamps.sort((n1, n2) => n1 - n2))
     .map((timestamps) => [ timestamps[0], timestamps[timestamps.length - 1], ]);
 
+  // get the percent of the timeline
+  const currentTimeRange$ = Rx.Observable.combineLatest(
+    timeRange$,
+    rangeInputValue$.startWith(1),
+  ).map(([ timeRange, currentPercent, ]) => {
+    const start = timeRange[0];
+    const end = timeRange[1];
+
+    const getCurrent = d3.scaleLinear()
+      .domain([ 0, 1 ])
+      .range([start, end]);
+
+    return {
+      currentPercent,
+      current: getCurrent(currentPercent),
+      end,
+      start,
+    };
+  })
+
   const isDisconnectDisabled$ = Rx.Observable.combineLatest(
     connectionCount$,
     closeCount$,
@@ -520,6 +584,7 @@ export function App(sources) {
     isDisconnectDisabled$,
     timelineTable$,
     timeRange$,
+    currentTimeRange$,
   );
 
   const state$ = stateSource$.map(toState);
