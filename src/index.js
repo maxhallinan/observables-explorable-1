@@ -6,8 +6,12 @@ import {App} from './app'
 
 const main = App
 
-const drivers = {
-  DOM: makeDOMDriver('#root')
-}
+window.ObservablesExplorable1 = {
+  run: (appContainer) => {
+    const drivers = {
+      DOM: makeDOMDriver(appContainer)
+    }
 
-run(main, drivers)
+    run(main, drivers)
+  },
+};
