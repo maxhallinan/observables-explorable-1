@@ -10,7 +10,7 @@ export const explorable = style({
 });
 
 export const code = style({
-  fontFamily: 'monospace',
+  fontFamily: 'Menlo, monospace',
   fontSize: remToPx(0.8),
 });
 

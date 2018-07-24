@@ -244,8 +244,7 @@ const Timeline = (props) => {
   const { currentTimeRange, node, timeline, timeRange, } = props;
 
   const pathStartXCoord = 40.96;
-  // const pathEndXCoord = 55.51 * 16;
-  const pathEndXCoord = 35.527 * 16;
+  const pathEndXCoord = 55.51 * 16;
   const arrowHeadLength = 0.262 * 16;
   const circleSize = 0.41 * 16;
   const barXCoord = pathEndXCoord - (16 * 0.64);
@@ -304,7 +303,6 @@ const Timeline = (props) => {
       <text
         className={styles.code}
         fill="#333"
-        fontSize="10"
         x={pathEndXCoord + 10.24}
         y={node.point.y + 3}>
         {/*node.label*/}
@@ -313,7 +311,6 @@ const Timeline = (props) => {
       <text
         className={styles.code}
         fill="#333"
-        fontSize="10"
         x={pathStartXCoord}
         y={node.point.y + (16 * 1.25)}>
           {node.label}
