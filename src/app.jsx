@@ -1,6 +1,8 @@
 import * as d3 from 'd3';
 import * as Rx from 'rxjs'
 
+import * as styles from './styles';
+
 // The positions and sizes based on a 1:1.25 modular scale where 1em = 16px:
 // http://www.modularscale.com/?1,1.5&em&1.25
 // x-axis increments are multiples of 10.25px (0.64em)
@@ -244,10 +246,10 @@ const Timeline = (props) => {
   const pathStartXCoord = 40.96;
   const pathEndXCoord = 55.51 * 16;
   const arrowHeadLength = 0.262 * 16;
-  const circleSize = 0.41 * 16; 
+  const circleSize = 0.41 * 16;
   const barXCoord = pathEndXCoord - (16 * 0.64);
   const timelineEnd = barXCoord - (circleSize / 2) - 2.25 - arrowHeadLength;
-  const maxCircles = 
+  const maxCircles =
     Math.floor((timelineEnd - pathStartXCoord) / (circleSize + arrowHeadLength));
   const domainEnd = currentTimeRange.current;
   const domainStart = domainEnd - (maxCircles * 750);
@@ -261,10 +263,10 @@ const Timeline = (props) => {
     .domain(domain)
     .range(range);
 
-  const currentTimeline = 
+  const currentTimeline =
     timeline.filter(([ timestamp ]) => timestamp <= domainEnd);
 
-  const currentValue = currentTimeline.length > 0 
+  const currentValue = currentTimeline.length > 0
     ? currentTimeline[currentTimeline.length - 1][1]
     : '';
 
@@ -299,7 +301,7 @@ const Timeline = (props) => {
         strokeWidth="1.25px"
       />
       <text
-        className="code"
+        className={styles.code}
         fill="#333"
         fontSize="10"
         x={pathEndXCoord + 10.24}
@@ -308,7 +310,7 @@ const Timeline = (props) => {
         {displayValue}
       </text>
       <text
-        className="code"
+        className={styles.code}
         fill="#333"
         fontSize="10"
         x={pathStartXCoord}
@@ -337,11 +339,11 @@ const Node = (props) => {
 
   return (
     <g>
-      <Timeline 
-        currentTimeRange={props.currentTimeRange} 
-        node={node} 
-        timeline={timeline} 
-        timeRange={timeRange} 
+      <Timeline
+        currentTimeRange={props.currentTimeRange}
+        node={node}
+        timeline={timeline}
+        timeRange={timeRange}
       />
       <circle
         fill="white"
@@ -384,35 +386,38 @@ const Edge = (props) => {
 const toView = (state) => {
   return (
     <div>
-      <svg width="100%">
+      <svg
+        className={styles.explorable}
+        width="100%"
+      >
         {state.graph.edges.map((edge) => <Edge edge={edge} />)}
         {state.graph.nodes.map((node) => (
-          <Node 
-            currentTimeRange={state.currentTimeRange} 
-            node={node} 
-            timelineTable={state.timelineTable} 
-            timeRange={state.timeRange} 
+          <Node
+            currentTimeRange={state.currentTimeRange}
+            node={node}
+            timelineTable={state.timelineTable}
+            timeRange={state.timeRange}
           />
         ))}
       </svg>
-      <div className="controls">
+      <div className={styles.controls}>
         <button
-          className="connect-btn"
+          className={`${styles.controlItem} js-connect`}
         >
             Connect
         </button>
         <button
-          className="disconnect-btn"
+          className={`${styles.controlItem} js-disconnect`}
           disabled={state.isDisconnectDisabled}
         >
             Disconnect
         </button>
-        <input 
-          className="range-input"
-          max={1} 
-          min={0} 
+        <input
+          className={`${styles.controlItem} js-timerange`}
+          max={1}
+          min={0}
           step={0.01}
-          type="range" 
+          type="range"
           value={state.currentTimeRange.currentPercent}
         />
       </div>
@@ -440,18 +445,20 @@ export function App(sources) {
     nodes,
   });
 
-  const rangeInputEvent$ = sources.DOM.select('.range-input').events('input');
+  const rangeInputEvent$ = sources.DOM.select('.js-timerange')
+    .events('input');
 
   const rangeInputValue$ = rangeInputEvent$
     .map((event) => Number(event.target.value));
 
-  const rangeChangeEvent$ = sources.DOM.select('.range-input').events('change');
+  const rangeChangeEvent$ = sources.DOM.select('.js-timerange')
+    .events('change');
 
   const rangeChangeValue$ = rangeChangeEvent$
     .map((event) => Number(event.target.value));
 
   const connectClick$ =
-    sources.DOM.select('.connect-btn').events('click');
+    sources.DOM.select('.js-connect').events('click');
 
   const connection$ =
     connectClick$.mapTo(`[ WebSocket, http.IncomingMessage ]`);
@@ -462,7 +469,7 @@ export function App(sources) {
     connection$.mapTo(`WebSocket`);
 
   const disconnectClick$ =
-    sources.DOM.select('.disconnect-btn').events('click');
+    sources.DOM.select('.js-disconnect').events('click');
 
   const close$ = disconnectClick$.mapTo(`[ code, reason ]`);
 
@@ -518,7 +525,7 @@ export function App(sources) {
     combinedCountTimeline$,
     currentCountTimeline$,
     pauseTimeline$,
-    tickTimeline$,  
+    tickTimeline$,
   );
 
   const timelineTable$ = timeline$.map(([
@@ -572,8 +579,8 @@ export function App(sources) {
   const isDisconnectDisabled$ = Rx.Observable.combineLatest(
     connectionCount$,
     closeCount$,
-  ).map(function ([ 
-    connectionCount, 
+  ).map(function ([
+    connectionCount,
     closeCount,
   ]) {
     return connectionCount <= closeCount;
