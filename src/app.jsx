@@ -13,7 +13,7 @@ const nodes = [
     label: 'connection$',
     latestValue: '[WebSocket, http.IncomingMessage]',
     point: {
-      x: 20.48,
+      x: 16.24,
       y: 10.24,
     },
     timelineName: 'connections',
@@ -22,7 +22,7 @@ const nodes = [
     label: 'connectionCount$',
     latestValue: '3',
     point: {
-      x: 10.24,
+      x: 6,
       y: 59.072,
     },
     timelineName: 'connectionCounts',
@@ -31,7 +31,7 @@ const nodes = [
     label: 'socket$',
     latestValue: 'WebSocket',
     point: {
-      x: 30.72,
+      x: 26.48,
       y: 107.904,
     },
     timelineName: 'sockets',
@@ -40,7 +40,7 @@ const nodes = [
     label: 'close$',
     latestValue: '[status, reason]',
     point: {
-      x: 30.72,
+      x: 26.48,
       y: 156.736,
     },
     timelineName: 'closes',
@@ -49,7 +49,7 @@ const nodes = [
     label: 'closeCount$',
     latestValue: '2',
     point: {
-      x: 30.72,
+      x: 26.48,
       y: 205.568,
     },
     timelineName: 'closeCounts',
@@ -58,7 +58,7 @@ const nodes = [
     label: 'combinedCount$',
     latestValue: '[3, 2]',
     point: {
-      x: 20.48,
+      x: 16.24,
       y: 254.40,
     },
     timelineName: 'combinedCounts',
@@ -67,7 +67,7 @@ const nodes = [
     label: 'currentCount$',
     latestValue: '1',
     point: {
-      x: 20.48,
+      x: 16.24,
       y: 303.232,
     },
     timelineName: 'currentCounts',
@@ -76,7 +76,7 @@ const nodes = [
     label: 'pause$',
     latestValue: 'true',
     point: {
-      x: 20.48,
+      x: 16.24,
       y: 352.064,
     },
     timelineName: 'pauses',
@@ -85,7 +85,7 @@ const nodes = [
     label: 'tick$',
     latestValue: 'tick',
     point: {
-      x: 20.48,
+      x: 16.24,
       y: 400.896,
     },
     timelineName: 'ticks',
@@ -97,10 +97,10 @@ const edges = [
     label: 'connection$ -> connectionCount$',
     points: [
       {
-        x: 20.48,
+        x: 16.24,
         y: 10.24,
       }, {
-        x: 10.24,
+        x: 6,
         y: 59.072,
       }
     ],
@@ -108,13 +108,13 @@ const edges = [
     label: 'connection$ -> socket$',
     points: [
       {
-        x: 20.48,
+        x: 16.24,
         y: 10.25,
       }, {
-        x: 30.72,
+        x: 26.48,
         y: 59.072,
       }, {
-        x: 30.72,
+        x: 26.48,
         y: 107.904,
       }
     ],
@@ -122,10 +122,10 @@ const edges = [
     label: 'socket$ -> close$',
     points: [
       {
-        x: 30.72,
+        x: 26.48,
         y: 107.904,
       }, {
-        x: 30.72,
+        x: 26.48,
         y: 156.736
       }
     ],
@@ -133,10 +133,10 @@ const edges = [
     label: 'close$ -> closeCount$',
     points: [
       {
-        x: 30.72,
+        x: 26.48,
         y: 156.736,
       }, {
-        x: 30.72,
+        x: 26.48,
         y: 205.568,
       }
     ],
@@ -144,10 +144,10 @@ const edges = [
     label: 'closeCount$ -> combinedCount$',
     points: [
       {
-        x: 30.72,
+        x: 26.48,
         y: 205.568,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 254.40,
       }
     ]
@@ -155,13 +155,13 @@ const edges = [
     label: 'connectionCount$ -> combinedCount$',
     points: [
       {
-        x: 10.24,
+        x: 6,
         y: 59.072,
       }, {
-        x: 10.24,
+        x: 6,
         y: 205.568,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 254.40,
       },
     ]
@@ -169,10 +169,10 @@ const edges = [
     label: 'combinedCount$ -> currentCount$',
     points: [
       {
-        x: 20.48,
+        x: 16.24,
         y: 254.40,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 303.232,
       }
     ]
@@ -180,10 +180,10 @@ const edges = [
     label: 'currentCount$ -> pause$',
     points: [
       {
-        x: 20.48,
+        x: 16.24,
         y: 303.232,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 352.064,
       }
     ]
@@ -191,10 +191,10 @@ const edges = [
     label: 'pause$ -> tick$',
     points: [
       {
-        x: 20.48,
+        x: 16.24,
         y: 352.064,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 400.896,
       }
     ]
@@ -202,10 +202,10 @@ const edges = [
     label: 'tick$ ->',
     points: [
       {
-        x: 20.48,
+        x: 16.24,
         y: 400.896,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 400.896 + (3.052 * 16),
       }
     ]
@@ -213,13 +213,13 @@ const edges = [
     label: '->',
     points: [
       {
-        x: 20.48 - (0.262 * 16),
+        x: 16.24 - (0.262 * 16),
         y: 400.896 + (3.052 * 16) - 4.192,
       }, {
-        x: 20.48,
+        x: 16.24,
         y: 400.896 + (3.052 * 16),
       }, {
-        x: 20.48 + (0.262 * 16),
+        x: 16.24 + (0.262 * 16),
         y: 400.896 + (3.052 * 16) - 4.192,
       }
     ]
