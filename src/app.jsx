@@ -7,6 +7,10 @@ import * as styles from './styles';
 // http://www.modularscale.com/?1,1.5&em&1.25
 // x-axis increments are multiples of 10.25px (0.64em)
 // y-axis increments are multiples of 48.832px (3.052em)
+const yIncrements = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ].reduce((ns, x, index) => {
+  return [...ns, ns[index] + 61.04 ];
+}, [10.24])
+
 const nodes = [
   {
     diameter: 10.24,
@@ -14,7 +18,7 @@ const nodes = [
     latestValue: '[WebSocket, http.IncomingMessage]',
     point: {
       x: 16.24,
-      y: 10.24,
+      y: yIncrements[0],
     },
     timelineName: 'connections',
   }, {
@@ -23,7 +27,7 @@ const nodes = [
     latestValue: '3',
     point: {
       x: 6,
-      y: 59.072,
+      y: yIncrements[1],
     },
     timelineName: 'connectionCounts',
   }, {
@@ -32,7 +36,7 @@ const nodes = [
     latestValue: 'WebSocket',
     point: {
       x: 26.48,
-      y: 107.904,
+      y: yIncrements[2],
     },
     timelineName: 'sockets',
   }, {
@@ -41,7 +45,7 @@ const nodes = [
     latestValue: '[status, reason]',
     point: {
       x: 26.48,
-      y: 156.736,
+      y: yIncrements[3],
     },
     timelineName: 'closes',
   }, {
@@ -50,7 +54,7 @@ const nodes = [
     latestValue: '2',
     point: {
       x: 26.48,
-      y: 205.568,
+      y: yIncrements[4],
     },
     timelineName: 'closeCounts',
   }, {
@@ -59,7 +63,7 @@ const nodes = [
     latestValue: '[3, 2]',
     point: {
       x: 16.24,
-      y: 254.40,
+      y: yIncrements[5],
     },
     timelineName: 'combinedCounts',
   }, {
@@ -68,7 +72,7 @@ const nodes = [
     latestValue: '1',
     point: {
       x: 16.24,
-      y: 303.232,
+      y: yIncrements[6],
     },
     timelineName: 'currentCounts',
   }, {
@@ -77,7 +81,7 @@ const nodes = [
     latestValue: 'true',
     point: {
       x: 16.24,
-      y: 352.064,
+      y: yIncrements[7],
     },
     timelineName: 'pauses',
   }, {
@@ -86,7 +90,7 @@ const nodes = [
     latestValue: 'tick',
     point: {
       x: 16.24,
-      y: 400.896,
+      y: yIncrements[8],
     },
     timelineName: 'ticks',
   }
@@ -98,10 +102,10 @@ const edges = [
     points: [
       {
         x: 16.24,
-        y: 10.24,
+        y: yIncrements[0],
       }, {
         x: 6,
-        y: 59.072,
+        y: yIncrements[1],
       }
     ],
   }, {
@@ -109,13 +113,13 @@ const edges = [
     points: [
       {
         x: 16.24,
-        y: 10.25,
+        y: yIncrements[0],
       }, {
         x: 26.48,
-        y: 59.072,
+        y: yIncrements[1],
       }, {
         x: 26.48,
-        y: 107.904,
+        y: yIncrements[2],
       }
     ],
   }, {
@@ -123,10 +127,10 @@ const edges = [
     points: [
       {
         x: 26.48,
-        y: 107.904,
+        y: yIncrements[2],
       }, {
         x: 26.48,
-        y: 156.736
+        y: yIncrements[3],
       }
     ],
   }, {
@@ -134,10 +138,10 @@ const edges = [
     points: [
       {
         x: 26.48,
-        y: 156.736,
+        y: yIncrements[3],
       }, {
         x: 26.48,
-        y: 205.568,
+        y: yIncrements[4],
       }
     ],
   }, {
@@ -145,10 +149,10 @@ const edges = [
     points: [
       {
         x: 26.48,
-        y: 205.568,
+        y: yIncrements[4],
       }, {
         x: 16.24,
-        y: 254.40,
+        y: yIncrements[5],
       }
     ]
   }, {
@@ -156,13 +160,13 @@ const edges = [
     points: [
       {
         x: 6,
-        y: 59.072,
+        y: yIncrements[1],
       }, {
         x: 6,
-        y: 205.568,
+        y: yIncrements[4]
       }, {
         x: 16.24,
-        y: 254.40,
+        y: yIncrements[5]
       },
     ]
   }, {
@@ -170,10 +174,10 @@ const edges = [
     points: [
       {
         x: 16.24,
-        y: 254.40,
+        y: yIncrements[5],
       }, {
         x: 16.24,
-        y: 303.232,
+        y: yIncrements[6],
       }
     ]
   }, {
@@ -181,10 +185,10 @@ const edges = [
     points: [
       {
         x: 16.24,
-        y: 303.232,
+        y: yIncrements[6],
       }, {
         x: 16.24,
-        y: 352.064,
+        y: yIncrements[7],
       }
     ]
   }, {
@@ -192,10 +196,10 @@ const edges = [
     points: [
       {
         x: 16.24,
-        y: 352.064,
+        y: yIncrements[7],
       }, {
         x: 16.24,
-        y: 400.896,
+        y: yIncrements[8],
       }
     ]
   }, {
@@ -203,10 +207,10 @@ const edges = [
     points: [
       {
         x: 16.24,
-        y: 400.896,
+        y: yIncrements[8],
       }, {
         x: 16.24,
-        y: 400.896 + (3.052 * 16),
+        y: yIncrements[9],
       }
     ]
   }, {
@@ -214,13 +218,13 @@ const edges = [
     points: [
       {
         x: 16.24 - (0.262 * 16),
-        y: 400.896 + (3.052 * 16) - 4.192,
+        y: yIncrements[9] - 4.192,
       }, {
         x: 16.24,
-        y: 400.896 + (3.052 * 16),
+        y: yIncrements[9],
       }, {
         x: 16.24 + (0.262 * 16),
-        y: 400.896 + (3.052 * 16) - 4.192,
+        y: yIncrements[9] - 4.192,
       }
     ]
   },
@@ -252,7 +256,7 @@ const Timeline = (props) => {
   const maxCircles =
     Math.floor((timelineEnd - pathStartXCoord) / (circleSize + arrowHeadLength));
   const domainEnd = currentTimeRange.current;
-  const domainStart = domainEnd - (maxCircles * 750);
+  const domainStart = domainEnd - (maxCircles * 500);
   const domain = [ domainStart, domainEnd, ];
   const range = [
     40.96 + (6.56 / 2), // align left edge of circle with start of timeline
@@ -301,11 +305,10 @@ const Timeline = (props) => {
         strokeWidth="1.25px"
       />
       <text
-        className={styles.code}
+        className={`${styles.code} ${styles.streamCurrentValue}`}
         fill="#333"
-        x={pathEndXCoord + 10.24}
-        y={node.point.y + 3}>
-        {/*node.label*/}
+        x={pathEndXCoord - 10.24 + 3}
+        y={node.point.y + (16 * 1.563)}>
         {displayValue}
       </text>
       <text
@@ -483,7 +486,7 @@ export function App(sources) {
 
   const tick$ = pause$.switchMap(
     (isPaused) =>
-      isPaused ? Rx.Observable.never() : Rx.Observable.timer(0, 1000)
+      isPaused ? Rx.Observable.never() : Rx.Observable.timer(0, 1250)
   );
 
   const timelineSources = [
