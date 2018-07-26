@@ -1,12 +1,10 @@
 import { style } from 'typestyle';
 
-const remBase = 16;
-
-const remToPx = (rem) => `${rem * remBase}px`;
+import { remToPx } from './rem-to-px';
 
 export const explorable = style({
   display: 'block',
-  height: '572.24px',
+  height: '536.24px',
 });
 
 export const code = style({
