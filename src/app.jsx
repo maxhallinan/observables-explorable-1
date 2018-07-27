@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import * as Rx from 'rxjs'
 
 import { remToPx } from './rem-to-px';
-import { graphLayout, } from './stream-graph-layout';
+import { graphLayout, xScale as graphXScale, } from './stream-graph-layout';
 import * as styles from './styles';
 
 const toState = ([
@@ -22,11 +22,11 @@ const toState = ([
 const Timeline = (props) => {
   const { currentTimeRange, node, timeline, timeRange, } = props;
 
-  const pathStartXCoord = 40.96;
+  const pathStartXCoord = graphXScale[3];
   const pathEndXCoord = 851;
-  const arrowHeadLength = 0.262 * 16;
-  const circleSize = 0.41 * 16;
-  const barXCoord = pathEndXCoord - (16 * 0.64);
+  const arrowHeadLength = remToPx(0.262);
+  const circleSize = remToPx(0.41);
+  const barXCoord = pathEndXCoord - remToPx(0.64);
   const timelineEnd = barXCoord - (circleSize / 2) - 2.25 - arrowHeadLength;
   const maxCircles =
     Math.floor((timelineEnd - pathStartXCoord) / (circleSize + arrowHeadLength));
@@ -38,7 +38,7 @@ const Timeline = (props) => {
     timelineEnd,
   ];
 
-  const xScale = d3.scaleLinear()
+  const getXCoord = d3.scaleLinear()
     .domain(domain)
     .range(range);
 
@@ -99,7 +99,7 @@ const Timeline = (props) => {
             className="timeline-point"
             fill="#444"
             stroke="#444"
-            cx={xScale(timestamp)}
+            cx={getXCoord(timestamp)}
             cy={node.point.y}
             r={circleSize / 2}
           />

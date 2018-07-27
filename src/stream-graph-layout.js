@@ -30,7 +30,7 @@ const toXScale = toScale(xStep);
 
 const xScaleStart = 6; // 6px
 
-const xScale = numRangeOf(3).reduce(toXScale, [ xScaleStart, ]);
+export const xScale = numRangeOf(4).reduce(toXScale, [ xScaleStart, ]);
 
 const yStep = remToPx(3.052 + 0.512);
 
@@ -38,7 +38,7 @@ const toYScale = toScale(yStep);
 
 const yScaleStart = remToPx(0.64);
 
-const yScale = numRangeOf(9).reduce(toYScale, [ yScaleStart, ]);
+export const yScale = numRangeOf(9).reduce(toYScale, [ yScaleStart, ]);
 
 const NODE_DIAMETER = remToPx(0.64);
 
