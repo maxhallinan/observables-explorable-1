@@ -9,7 +9,7 @@ export const explorable = style({
 
 export const code = style({
   fontFamily: '"Pitch", monospace',
-  fontSize: remToPx(0.8),
+  fontSize: remToPx(1),
 });
 
 export const streamCurrentValue = style({

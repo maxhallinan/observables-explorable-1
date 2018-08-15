@@ -23,7 +23,7 @@ const Timeline = (props) => {
   const { currentTimeRange, node, timeline, timeRange, } = props;
 
   const pathStartXCoord = graphXScale[3];
-  const pathEndXCoord = 799;
+  const pathEndXCoord = 797;
   const arrowHeadLength = remToPx(0.262);
   const circleSize = remToPx(0.41);
   const barXCoord = pathEndXCoord - remToPx(0.64);
@@ -81,14 +81,14 @@ const Timeline = (props) => {
       />
       <text
         className={`${styles.code} ${styles.streamCurrentValue}`}
-        fill="#333"
+        fill="#222"
         x={pathEndXCoord - 10.24 + 3}
-        y={node.point.y + (16 * 1.563)}>
+        y={node.point.y + (16 * 1.25)}>
         {displayValue}
       </text>
       <text
         className={styles.code}
-        fill="#333"
+        fill="#222"
         x={pathStartXCoord}
         y={node.point.y + (16 * 1.25)}>
           {node.label}
