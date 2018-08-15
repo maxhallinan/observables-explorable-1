@@ -23,7 +23,7 @@ const Timeline = (props) => {
   const { currentTimeRange, node, timeline, timeRange, } = props;
 
   const pathStartXCoord = graphXScale[3];
-  const pathEndXCoord = 851;
+  const pathEndXCoord = 799;
   const arrowHeadLength = remToPx(0.262);
   const circleSize = remToPx(0.41);
   const barXCoord = pathEndXCoord - remToPx(0.64);
