@@ -24,3 +24,25 @@ export const controls = style({
 export const controlItem = style({
   display: 'block',
 });
+
+export const controlButton = style({
+  fontFamily: '"TiemposText", serif',
+  fontSize: '0.8rem',
+  fontWeight: 400,
+});
+
+export const timeRange = style({
+  display: 'flex',
+  marginLeft: 'auto',
+});
+
+export const timeRangeLabel = style({
+  fontFamily: '"TiemposText", serif',
+  fontSize: '0.8rem',
+  fontWeight: 400,
+  padding: '0 0.512rem 0 0',
+});
+
+export const timeRangeInput = style({
+  margin: 0,
+});

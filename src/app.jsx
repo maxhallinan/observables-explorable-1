@@ -178,24 +178,32 @@ const toView = (state) => {
       </svg>
       <div className={styles.controls}>
         <button
-          className={`${styles.controlItem} js-connect`}
+          className={`${styles.controlItem} ${styles.controlButton} js-connect`}
         >
             Connect
         </button>
         <button
-          className={`${styles.controlItem} js-disconnect`}
+          className={`${styles.controlItem} ${styles.controlButton} js-disconnect`}
           disabled={state.isDisconnectDisabled}
         >
             Disconnect
         </button>
-        <input
-          className={`${styles.controlItem} js-timerange`}
-          max={1}
-          min={0}
-          step={0.01}
-          type="range"
-          value={state.currentTimeRange.currentPercent}
-        />
+        <div className={styles.timeRange}>
+          <label 
+            className={styles.timeRangeLabel}
+            htmlFor="foo">
+            Time
+          </label>
+          <input
+            className={`${styles.controlItem} ${styles.timeRangeInput} js-timerange`}
+            id="foo"
+            max={1}
+            min={0}
+            step={0.01}
+            type="range"
+            value={state.currentTimeRange.currentPercent}
+          />
+        </div>
       </div>
     </div>
   );
