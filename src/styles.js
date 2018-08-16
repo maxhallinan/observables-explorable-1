@@ -32,6 +32,7 @@ export const controlButton = style({
 });
 
 export const timeRange = style({
+  alignItems: 'center',
   display: 'flex',
   marginLeft: 'auto',
 });
