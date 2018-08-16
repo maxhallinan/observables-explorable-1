@@ -46,4 +46,6 @@ export const timeRangeLabel = style({
 
 export const timeRangeInput = style({
   margin: 0,
+  position: 'relative',
+  top: '1px',
 });
