@@ -25,7 +25,12 @@ export const controlItem = style({
   display: 'block',
 });
 
+export const controlButtonFirst = style({
+  margin: '0 0.512rem 0 0',
+});
+
 export const controlButton = style({
+  display: 'inline-block',
   fontFamily: '"TiemposText", serif',
   fontSize: '0.8rem',
   fontWeight: 400,

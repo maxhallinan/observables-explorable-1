@@ -178,7 +178,7 @@ const toView = (state) => {
       </svg>
       <div className={styles.controls}>
         <button
-          className={`${styles.controlItem} ${styles.controlButton} js-connect`}
+          className={`${styles.controlItem} ${styles.controlButton} ${styles.controlButtonFirst} js-connect`}
         >
             Connect
         </button>
