@@ -122,8 +122,9 @@ const Node = (props) => {
         timeRange={timeRange}
       />
       <circle
-        fill="white"
+        fill="#fff"
         stroke="#333"
+        strokeWidth="10px"
         cx={node.point.x}
         cy={node.point.y}
         r={node.diameter / 2}
